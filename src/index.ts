@@ -38,6 +38,14 @@ async function main(): Promise<void> {
   console.log(`\n  Post: "${text}"\n`)
 
   const config = loadConfig()
+  const configured: string[] = []
+  if (config.mastodon) configured.push(`Mastodon (${config.mastodon.instance})`)
+  if (config.threads) configured.push('Threads')
+  if (config.twitter) configured.push('Twitter')
+  if (config.facebook) configured.push(`Facebook (${config.facebook.email})`)
+  if (config.facebookDarren) configured.push(`Facebook Darren (${config.facebookDarren.email})`)
+  console.log(`  Platforms: ${configured.join(', ') || 'none'}\n`)
+
   const posts: Promise<PostResult>[] = []
 
   if (config.mastodon) posts.push(postToMastodon(config.mastodon, text, options.image))
