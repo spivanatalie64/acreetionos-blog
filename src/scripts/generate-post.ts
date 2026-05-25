@@ -17,14 +17,14 @@ const FREE_MODELS = [
 ]
 
 const ANGLES = [
-  'new features or updates',
-  'development progress or roadmap',
+  'new features or updates with upstream references',
+  'development progress or roadmap with CVE mentions',
   'community highlights or contributions',
   'comparison to other operating systems',
-  'tutorials or how-to tips',
+  'tutorials or how-to tips with relevant CVEs',
   'philosophy and design decisions',
   'performance benchmarks or optimizations',
-  'security or privacy aspects',
+  'security or privacy aspects with current upstream CVEs',
 ]
 
 function slugify(text: string): string {
@@ -56,7 +56,7 @@ async function main() {
       {
         role: 'system',
         content:
-          'You are a technical writer for an open-source operating system project. Write a blog post in markdown. Include a title (as # Heading), 2-3 paragraphs of content, and a short description line for SEO. The post should be informative and sound like it was written by a real person in the community.',
+          'You are a technical writer for the AcreetionOS open-source operating system project (based on Arch Linux with Cinnamon desktop). Write an in-depth, informational blog post in markdown. Include a title (as # Heading), 3-5 substantive paragraphs, code snippets or terminal commands where relevant, and a short description line for SEO. Reference relevant upstream Arch Linux CVEs (search your knowledge for current real CVE IDs like CVE-2025-* or CVE-2026-*), mention upstream packages or kernel versions, and include practical security or performance advice. The post should be technically accurate, genuinely informative, and sound like it was written by a real person in the open-source community.',
       },
       {
         role: 'user',
