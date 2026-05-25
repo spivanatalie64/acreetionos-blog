@@ -3,7 +3,7 @@ name: Deploy Cloudflare Worker
 on:
   push:
     branches: [main]
-    paths: [workers/**, .github/workflows/deploy-worker.yml]
+    paths: [workers/**, scripts/**, .github/workflows/deploy-worker.yml]
   workflow_dispatch:
 
 jobs:
@@ -14,11 +14,7 @@ jobs:
 
       - name: Deploy worker
         run: |
-          python3 -c "
-import json
-with open('workers/proxy-worker.js') as f:
-    print(json.dumps({'script': f.read()}))
-" > /tmp/worker-body.json
+          python3 scripts/build-worker-json.py > /tmp/worker-body.json
 
           curl -s -X PUT \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/workers/scripts/blog-proxy" \
