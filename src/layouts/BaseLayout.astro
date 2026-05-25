@@ -44,20 +44,34 @@ const ogImage = image || '/acreetionoslogo.webp'
     <style>
       :root {
         --green: #2ecc71;
-        --green-dim: rgba(46, 204, 113, 0.15);
-        --bg: #0c0f0e;
-        --bg-card: #141a17;
-        --bg-panel: #1a221e;
-        --border: #1e2a24;
-        --border-bright: #2a3a32;
-        --fg: #e8ece9;
-        --fg-muted: #8a9a92;
-        --fg-dim: #5a6a62;
-        --glow: rgba(46, 204, 113, 0.06);
-        --code-bg: rgba(46, 204, 113, 0.06);
+        --green-bright: #3ddc84;
+        --green-glow: rgba(46, 204, 113, 0.12);
+        --green-soft: rgba(46, 204, 113, 0.06);
+        --bg: #080b0a;
+        --bg-card: #0e1311;
+        --bg-panel: #131916;
+        --bg-elevated: #1a221e;
+        --border: #1a2420;
+        --border-hover: #2a3a32;
+        --fg: #eef2f0;
+        --fg-muted: #8a9e94;
+        --fg-dim: #5a6e64;
         --font-sans: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         --font-mono: 'Fira Code', monospace;
-        --max-w: 780px;
+        --max-w: 760px;
+        --radius: 14px;
+        --radius-sm: 10px;
+      }
+
+      @keyframes shimmer {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
       }
 
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -72,23 +86,23 @@ const ogImage = image || '/acreetionoslogo.webp'
         display: flex;
         flex-direction: column;
         background-image:
-          radial-gradient(ellipse at 20% 50%, rgba(46, 204, 113, 0.03) 0%, transparent 50%),
-          radial-gradient(ellipse at 80% 20%, rgba(46, 204, 113, 0.02) 0%, transparent 50%);
+          radial-gradient(ellipse at 15% 25%, rgba(46, 204, 113, 0.04) 0%, transparent 55%),
+          radial-gradient(ellipse at 85% 75%, rgba(46, 204, 113, 0.025) 0%, transparent 55%),
+          radial-gradient(ellipse at 50% 0%, rgba(46, 204, 113, 0.015) 0%, transparent 40%);
       }
 
       ::selection { background: rgba(46, 204, 113, 0.3); color: #fff; }
-      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: var(--bg); }
-      ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 10px; }
-      ::-webkit-scrollbar-thumb:hover { background: var(--green); }
+      ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 10px; }
 
       a { color: var(--green); text-decoration: none; transition: all 0.2s; }
-      a:hover { text-decoration: underline; text-underline-offset: 3px; color: #3ddc84; }
+      a:hover { color: var(--green-bright); text-decoration: underline; text-underline-offset: 3px; }
 
       header {
-        background: rgba(12, 15, 14, 0.8);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        background: rgba(8, 11, 10, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border-bottom: 1px solid var(--border);
         position: sticky;
         top: 0;
@@ -99,7 +113,7 @@ const ogImage = image || '/acreetionoslogo.webp'
         max-width: var(--max-w);
         margin: 0 auto;
         padding: 0 1.25rem;
-        height: 64px;
+        height: 62px;
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -108,55 +122,99 @@ const ogImage = image || '/acreetionoslogo.webp'
       .logo {
         display: flex;
         align-items: center;
-        gap: 0.7rem;
+        gap: 0.65rem;
         font-family: var(--font-mono);
-        font-size: 1.15rem;
-        font-weight: 700;
+        font-size: 1.05rem;
+        font-weight: 600;
         color: var(--fg) !important;
         text-decoration: none !important;
         letter-spacing: -0.02em;
       }
 
       .logo-img {
-        height: 36px;
-        width: 36px;
-        border-radius: 8px;
+        height: 32px;
+        width: 32px;
+        border-radius: 6px;
         transition: transform 0.3s ease;
       }
-      .logo:hover .logo-img { transform: scale(1.05); }
+      .logo:hover .logo-img { transform: scale(1.08) rotate(-2deg); }
       .logo span { color: var(--green); }
 
-      .nav-links { margin-left: auto; display: flex; gap: 0.25rem; }
+      .nav-links { margin-left: auto; display: flex; gap: 0.2rem; }
       .nav-links a {
-        color: var(--fg-muted);
+        color: var(--fg-dim);
         font-weight: 450;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         text-decoration: none !important;
-        padding: 0.45rem 0.9rem;
+        padding: 0.4rem 0.8rem;
         border-radius: 8px;
         transition: all 0.2s;
       }
-      .nav-links a:hover { color: var(--fg); background: rgba(46, 204, 113, 0.06); }
+      .nav-links a:hover { color: var(--fg); background: var(--green-soft); text-decoration: none !important; }
 
       .page-wrapper {
         max-width: var(--max-w);
-        margin: 3rem auto;
+        margin: 2.5rem auto;
         padding: 0 1.25rem;
         flex: 1;
         width: 100%;
       }
 
+      .hero {
+        text-align: center;
+        padding: 3rem 0 2.5rem;
+        position: relative;
+      }
+
+      .hero-icon {
+        font-size: 2.4rem;
+        margin-bottom: 1rem;
+        display: block;
+        animation: float 4s ease-in-out infinite;
+      }
+
+      .hero h1 {
+        font-family: var(--font-mono);
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--fg);
+        line-height: 1.25;
+        letter-spacing: -0.04em;
+        margin-bottom: 0.5rem;
+      }
+
+      .hero h1 span {
+        background: linear-gradient(135deg, var(--green), var(--green-bright));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero p {
+        color: var(--fg-dim);
+        font-size: 0.95rem;
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      .divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
+        margin: 0 0 2rem;
+      }
+
       .content-box {
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 16px;
+        border-radius: var(--radius);
         overflow: hidden;
         transition: all 0.3s ease;
       }
 
       .content-box:hover {
-        border-color: var(--border-bright);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border-color: var(--border-hover);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       }
 
       .box-header {
@@ -167,17 +225,18 @@ const ogImage = image || '/acreetionoslogo.webp'
 
       .box-header h2 {
         font-family: var(--font-mono);
-        font-size: 1rem;
-        color: var(--fg);
-        font-weight: 600;
-        letter-spacing: -0.01em;
+        font-size: 0.85rem;
+        color: var(--fg-dim);
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
       }
 
       .box-body { padding: 1.5rem; }
 
       h1 {
         font-family: var(--font-mono);
-        font-size: 1.7rem;
+        font-size: 1.6rem;
         font-weight: 700;
         color: var(--fg);
         margin-bottom: 0.75rem;
@@ -187,7 +246,7 @@ const ogImage = image || '/acreetionoslogo.webp'
 
       h2 {
         font-family: var(--font-mono);
-        font-size: 1.25rem;
+        font-size: 1.2rem;
         font-weight: 600;
         color: var(--green);
         margin-top: 2.5rem;
@@ -197,14 +256,14 @@ const ogImage = image || '/acreetionoslogo.webp'
 
       h3 {
         font-family: var(--font-mono);
-        font-size: 1.05rem;
+        font-size: 1rem;
         font-weight: 600;
         color: var(--fg);
         margin-top: 1.75rem;
         margin-bottom: 0.5rem;
       }
 
-      p { margin-bottom: 1rem; color: var(--fg-muted); line-height: 1.8; font-size: 0.95rem; }
+      p { margin-bottom: 1rem; color: var(--fg-muted); line-height: 1.75; font-size: 0.92rem; }
       p strong { color: var(--fg); }
 
       ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--fg-muted); }
@@ -214,15 +273,15 @@ const ogImage = image || '/acreetionoslogo.webp'
         border-left: 3px solid var(--green);
         padding: 0.75rem 1rem;
         margin: 1.5rem 0;
-        background: var(--code-bg);
-        border-radius: 0 8px 8px 0;
+        background: var(--green-soft);
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
         color: var(--fg-muted);
         font-style: italic;
       }
 
       code {
         font-family: var(--font-mono);
-        background: var(--code-bg);
+        background: var(--green-soft);
         padding: 0.2em 0.45em;
         border-radius: 6px;
         font-size: 0.82em;
@@ -231,10 +290,10 @@ const ogImage = image || '/acreetionoslogo.webp'
 
       pre {
         margin: 1.5rem 0;
-        border-radius: 12px;
+        border-radius: var(--radius-sm);
         overflow: hidden;
         border: 1px solid var(--border);
-        background: rgba(0,0,0,0.2);
+        background: rgba(0,0,0,0.25);
       }
 
       pre code {
@@ -248,17 +307,19 @@ const ogImage = image || '/acreetionoslogo.webp'
         line-height: 1.6;
       }
 
-      img { max-width: 100%; border-radius: 12px; margin: 1.5rem 0; border: 1px solid var(--border); }
+      img { max-width: 100%; border-radius: var(--radius-sm); margin: 1.5rem 0; border: 1px solid var(--border); }
       hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
 
       table {
         width: 100%;
         border-collapse: collapse;
         margin: 1.5rem 0;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
       }
       th, td {
-        padding: 0.65rem 0.85rem;
+        padding: 0.6rem 0.8rem;
         border: 1px solid var(--border);
         text-align: left;
       }
@@ -267,13 +328,15 @@ const ogImage = image || '/acreetionoslogo.webp'
         font-family: var(--font-mono);
         font-weight: 600;
         color: var(--fg);
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
       td { color: var(--fg-muted); }
 
       .meta {
         color: var(--fg-dim);
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -283,24 +346,25 @@ const ogImage = image || '/acreetionoslogo.webp'
 
       .tag {
         display: inline-block;
-        background: var(--green-dim);
+        background: var(--green-glow);
         color: var(--green);
-        padding: 0.15rem 0.55rem;
+        padding: 0.12rem 0.5rem;
         border-radius: 6px;
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         font-weight: 500;
-        border: 1px solid rgba(46, 204, 113, 0.15);
+        border: 1px solid rgba(46, 204, 113, 0.12);
       }
 
-      .post-list { list-style: none; display: flex; flex-direction: column; gap: 0.85rem; }
+      .post-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
       .post-card {
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1.4rem;
-        transition: all 0.25s ease;
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.15, 0.75, 0.3, 1);
         position: relative;
         overflow: hidden;
+        cursor: default;
       }
 
       .post-card::before {
@@ -308,30 +372,44 @@ const ogImage = image || '/acreetionoslogo.webp'
         position: absolute;
         top: 0;
         left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(46, 204, 113, 0.03), transparent 50%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
+      .post-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 3px;
         height: 100%;
-        background: var(--green);
+        background: linear-gradient(180deg, var(--green), var(--green-bright));
         opacity: 0;
-        transition: opacity 0.25s ease;
+        transition: opacity 0.3s ease;
       }
 
       .post-card:hover {
-        border-color: var(--border-bright);
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-        background: linear-gradient(135deg, var(--bg-card), rgba(46, 204, 113, 0.02));
+        border-color: var(--border-hover);
+        transform: translateY(-3px);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
       }
 
       .post-card:hover::before { opacity: 1; }
+      .post-card:hover::after { opacity: 1; }
 
       .post-card-title {
         font-family: var(--font-mono);
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 600;
         color: var(--fg) !important;
         text-decoration: none !important;
-        transition: color 0.2s;
+        transition: color 0.25s;
         line-height: 1.4;
+        position: relative;
+        z-index: 1;
       }
 
       .post-card:hover .post-card-title { color: var(--green) !important; }
@@ -350,7 +428,7 @@ const ogImage = image || '/acreetionoslogo.webp'
         margin-top: auto;
       }
 
-      footer p { color: var(--fg-dim); margin-bottom: 0.3rem; text-align: center; font-size: 0.8rem; }
+      footer p { color: var(--fg-dim); margin-bottom: 0.3rem; text-align: center; font-size: 0.78rem; }
       footer a { color: var(--fg-muted); text-decoration: none; transition: color 0.2s; }
       footer a:hover { color: var(--green); text-decoration: none; }
     </style>
