@@ -96,8 +96,23 @@ const ogImage = image || '/acreetionoslogo.webp'
       ::-webkit-scrollbar-track { background: var(--bg); }
       ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 10px; }
 
-      a { color: var(--green); text-decoration: none; transition: all 0.2s; }
-      a:hover { color: var(--green-bright); text-decoration: underline; text-underline-offset: 3px; }
+      a { color: var(--green); text-decoration: none; position: relative; transition: color 0.2s; }
+      a::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 1.5px;
+        background: var(--green);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.25s cubic-bezier(0.15, 0.75, 0.3, 1);
+      }
+      a:hover { color: var(--green-bright); }
+      a:hover::after { transform: scaleX(1); }
+      .box-header a::after, .post-card a::after, .logo a::after, nav a::after { display: none; }
+      h1 a::after, h2 a::after, h3 a::after { display: none; }
 
       header {
         background: rgba(8, 11, 10, 0.85);
@@ -278,6 +293,20 @@ const ogImage = image || '/acreetionoslogo.webp'
         color: var(--fg-muted);
         font-style: italic;
       }
+
+      .info-box, .note-box, .tip-box, .warn-box {
+        padding: 1rem 1.25rem;
+        margin: 1.5rem 0;
+        border-radius: var(--radius-sm);
+        border-left: 3px solid;
+        font-size: 0.88rem;
+      }
+      .info-box { background: rgba(46, 204, 113, 0.05); border-color: var(--green); }
+      .note-box { background: rgba(97, 175, 239, 0.05); border-color: #61afef; }
+      .tip-box { background: rgba(255, 193, 7, 0.05); border-color: #ffc107; }
+      .warn-box { background: rgba(231, 76, 60, 0.05); border-color: #e74c3c; }
+      .info-box p, .note-box p, .tip-box p, .warn-box p { margin: 0.3rem 0; }
+      .info-box strong, .note-box strong, .tip-box strong, .warn-box strong { display: block; margin-bottom: 0.2rem; }
 
       code {
         font-family: var(--font-mono);
