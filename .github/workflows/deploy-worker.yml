@@ -14,14 +14,18 @@ jobs:
 
       - name: Deploy worker
         run: |
-          SCRIPT=$(cat workers/proxy-worker.js | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+          python3 -c "
+import json
+with open('workers/proxy-worker.js') as f:
+    print(json.dumps({'script': f.read()}))
+" > /tmp/worker-body.json
 
           curl -s -X PUT \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/workers/scripts/blog-proxy" \
             -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
             -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
-            -H "Content-Type: application/javascript" \
-            --data "{\"script\": $SCRIPT}" | python3 -c "import sys,json; r=json.load(sys.stdin); print('✓' if r.get('success') else '✗', r.get('errors',''))"
+            -H "Content-Type: application/json" \
+            --data @/tmp/worker-body.json | python3 -c "import sys,json; r=json.load(sys.stdin); print('✓' if r.get('success') else '✗', r.get('errors',''))"
 
       - name: Set route
         run: |
