@@ -22,12 +22,17 @@ const { Content } = await post.render()
   tags={post.data.tags}
   canonical={`/posts/${post.id}`}
 >
-  <article>
-    <h1>{post.data.title}</h1>
-    <div class="meta">
-      {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-      {post.data.tags?.map(tag => <span class="tag">{tag}</span>)}
+  <article class="content-box">
+    <div class="entry-header box-header">
+      <h1>{post.data.title}</h1>
+      <div class="meta" style="margin-bottom: 0;">
+        <i class="bi bi-calendar3" style="font-size: 0.75rem;"></i>
+        {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+        {post.data.tags?.map(tag => <span class="tag">{tag}</span>)}
+      </div>
     </div>
-    <Content />
+    <div class="box-body" style="padding: 1.5rem;">
+      <Content />
+    </div>
   </article>
 </BaseLayout>
