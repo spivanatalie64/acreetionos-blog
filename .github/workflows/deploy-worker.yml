@@ -18,7 +18,7 @@ jobs:
 
           curl -s -X PUT \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/workers/scripts/blog-proxy" \
-            -H "X-Auth-Email: ${{ vars.ACME_EMAIL }}" \
+            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
             -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
             -H "Content-Type: application/javascript" \
             --data "{\"script\": $SCRIPT}" | python3 -c "import sys,json; r=json.load(sys.stdin); print('✓' if r.get('success') else '✗', r.get('errors',''))"
@@ -27,7 +27,7 @@ jobs:
         run: |
           curl -s -X POST \
             "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/workers/routes" \
-            -H "X-Auth-Email: ${{ vars.ACME_EMAIL }}" \
+            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
             -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
             -H "Content-Type: application/json" \
             --data '{"pattern":"blog.natalie.acreetionos.org/*","script":"blog-proxy"}' | python3 -c "import sys,json; r=json.load(sys.stdin); print('✓' if r.get('success') else '✗', r.get('errors',''))"
