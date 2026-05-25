@@ -6,71 +6,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  cert:
+  ssl:
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     steps:
-      - name: Install certbot
+      - uses: actions/checkout@v4
+
+      - name: Trigger GitHub Pages certificate issuance
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq certbot
+          gh api repos/spivanatalie64/acreetionos-blog/pages -X PUT \
+            -f cname='blog.natalie.acreetionos.org'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Renew or obtain certificate
+      - name: Wait for certificate to be issued
         run: |
-          DOMAIN="${{ vars.DOMAIN }}"
+          for i in $(seq 1 90); do
+            state=$(gh api repos/spivanatalie64/acreetionos-blog/pages \
+              --jq '.https_certificate?.state // "null"')
+            echo "[$i/90] Certificate: $state"
+            if [ "$state" = "approved" ]; then
+              echo "✓ SSL certificate issued!"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "✗ Timed out waiting for certificate"
+          exit 1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # Try auto-renewal first (works if cert already exists and DNS is live)
-          sudo certbot renew --non-interactive --quiet 2>&1 && echo "✓ Renewed existing cert" && exit 0
-
-          # Not yet issued or renewal failed — do manual DNS challenge
-          sudo mkdir -p /tmp/le-challenge
-
-          # Run certbot manually via auth hook to capture challenge
-          sudo certbot certonly \
-            --manual \
-            --preferred-challenges dns \
-            -d "$DOMAIN" \
-            --email ${{ vars.ACME_EMAIL }} \
-            --agree-tos \
-            --no-eff-email \
-            --manual-public-ip-logging-ok \
-            --country US \
-            --state WA \
-            --city "Spokane" \
-            --org "${{ vars.CERT_ORG }}" \
-            --domains "${{ vars.DOMAIN }}" \
-            --keep-until-expiring \
-            --manual-auth-hook 'echo "$CERTBOT_VALIDATION" | sudo tee /tmp/le-challenge/txt' \
-            --non-interactive \
-            --max-validation-time 3600 \
-            2>&1 && echo "✓ Certificate issued" && exit 0
-
-          # If we got here, certbot failed — likely need DNS setup
-          CHAL=$(sudo cat /tmp/le-challenge/txt 2>/dev/null)
-          if [ -n "$CHAL" ]; then
-            echo "=== ACTION REQUIRED ===" >> $GITHUB_STEP_SUMMARY
-            echo "Add this TXT record to Cloudflare DNS:" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Name:** \`_acme-challenge.blog.natalie.acreetionos.org\`" >> $GITHUB_STEP_SUMMARY
-            echo "**Type:** TXT" >> $GITHUB_STEP_SUMMARY
-            echo "**Value:** \`$CHAL\`" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Then re-run this workflow." >> $GITHUB_STEP_SUMMARY
-
-            echo ""
-            echo "❄️  Add this TXT record to Cloudflare:"
-            echo ""
-            echo "  _acme-challenge.blog.natalie.acreetionos.org  TXT  \"$CHAL\""
-            echo ""
-            echo "Then re-run this workflow."
-          fi
-
-      - name: Show certificate info
-        if: always()
+      - name: Verify HTTPS is live
         run: |
-          CERT_DIR="/etc/letsencrypt/live/blog.natalie.acreetionos.org"
-          if [ -d "$CERT_DIR" ]; then
-            echo "✓ Certificate exists:"
-            sudo openssl x509 -in "$CERT_DIR/fullchain.pem" -noout -text | grep -E "Subject:|Not Before|Not After"
-          else
-            echo "No certificate directory yet — complete the DNS step first."
-          fi
+          curl -sIo /dev/null -w "%{http_code} %{redirect_url}" \
+            "https://blog.natalie.acreetionos.org"
+          echo ""
+          echo "✓ HTTPS is live"
