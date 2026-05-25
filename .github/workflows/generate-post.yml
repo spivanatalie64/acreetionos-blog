@@ -23,6 +23,7 @@ jobs:
       - run: |
           git config user.name "blog-bot"
           git config user.email "bot@acreetionos.org"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/spivanatalie64/acreetionos-blog.git
           git add src/content/posts/
           git diff --staged --quiet || git commit -m "Auto-generate blog post"
           git push
