@@ -4,7 +4,6 @@ const OPENROUTER_BASE = 'https://openrouter.ai/api/v1'
 
 const FREE_MODELS = [
   'google/gemini-2.0-flash-lite-preview-02-05:free',
-  'mistralai/mistral-7b-instruct:free',
   'meta-llama/llama-3.2-3b-instruct:free',
   'qwen/qwen2.5-7b-instruct:free',
   'microsoft/phi-3.5-mini-4k-instruct:free',
@@ -37,28 +36,39 @@ export async function generatePost(topic?: string): Promise<string> {
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set')
 
   const openai = new OpenAI({ baseURL: OPENROUTER_BASE, apiKey })
-  const model = pickModel()
   const subject = topic || process.env.CONTENT_PROMPT || 'acreetionos (acreetionos.org)'
   const angle = pickAngle()
+  const models = process.env.OPENROUTER_MODEL
+    ? [process.env.OPENROUTER_MODEL]
+    : FREE_MODELS.sort(() => Math.random() - 0.5)
 
-  const res = await openai.chat.completions.create({
-    model,
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are a social media manager for an open-source operating system project. Generate a short, engaging post (max 280 characters) that sounds natural and human-written. Do not use hashtags. Pick a fresh angle each time — vary between updates, insights, tips, and community news.',
-      },
-      {
-        role: 'user',
-        content: `Write a social media post about ${subject}, focusing on ${angle}. Make it sound like a real person wrote it.`,
-      },
-    ],
-    max_tokens: 150,
-    temperature: 0.9,
-  })
+  let lastError: string | undefined
 
-  const text = res.choices[0]?.message?.content?.trim()
-  if (!text) throw new Error('AI returned empty response')
-  return text
+  for (const model of models) {
+    try {
+      const res = await openai.chat.completions.create({
+        model,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a social media manager for an open-source operating system project. Generate a short, engaging post (max 280 characters) that sounds natural and human-written. Do not use hashtags. Pick a fresh angle each time — vary between updates, insights, tips, and community news.',
+          },
+          {
+            role: 'user',
+            content: `Write a social media post about ${subject}, focusing on ${angle}. Make it sound like a real person wrote it.`,
+          },
+        ],
+        max_tokens: 150,
+        temperature: 0.9,
+      })
+
+      const text = res.choices[0]?.message?.content?.trim()
+      if (text) return text
+    } catch (err: any) {
+      lastError = err.message
+    }
+  }
+
+  throw new Error(lastError || 'All models failed to generate a post')
 }
