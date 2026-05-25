@@ -1,0 +1,58 @@
+name: Crosspost
+
+on:
+  schedule:
+    - cron: '0 0,6,12,18 * * *'   # 4x daily: 00:00, 06:00, 12:00, 18:00 UTC
+  workflow_dispatch:
+    inputs:
+      text:
+        description: 'Post text (leave blank for AI-generated)'
+        required: false
+        default: ''
+        type: string
+      image:
+        description: 'URL of an image to attach'
+        required: false
+        type: string
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    env:
+      BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+      BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+      MASTODON_INSTANCE: ${{ secrets.MASTODON_INSTANCE }}
+      MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+      FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+      TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+      TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+      TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+      TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Download image for manual post
+        if: github.event_name == 'workflow_dispatch' && inputs.image != ''
+        run: curl -sL "${{ inputs.image }}" -o /tmp/attached-image
+
+      - name: AI-generated post (scheduled or manual with no text)
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.text == '')
+        run: node dist/index.js --generate
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
+          CONTENT_PROMPT: ${{ secrets.CONTENT_PROMPT }}
+
+      - name: Manual post with provided text
+        if: github.event_name == 'workflow_dispatch' && inputs.text != ''
+        run: node dist/index.js --text "${{ inputs.text }}" ${{ inputs.image && '--image /tmp/attached-image' || '' }}
