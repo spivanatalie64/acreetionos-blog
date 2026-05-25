@@ -16,7 +16,7 @@ jobs:
 
       - name: Renew or obtain certificate
         run: |
-          DOMAIN="blog.natalie.acreetionos.org"
+          DOMAIN="${{ vars.DOMAIN }}"
 
           # Try auto-renewal first (works if cert already exists and DNS is live)
           sudo certbot renew --non-interactive --quiet 2>&1 && echo "✓ Renewed existing cert" && exit 0
@@ -34,9 +34,10 @@ jobs:
             --no-eff-email \
             --manual-public-ip-logging-ok \
             --country US \
-            --state $STATE \
-            --city "${{ vars.CERT_LOCATION }}" \
+            --state WA \
+            --city "Spokane" \
             --org "${{ vars.CERT_ORG }}" \
+            --domains "${{ vars.DOMAIN }}" \
             --keep-until-expiring \
             --manual-auth-hook 'echo "$CERTBOT_VALIDATION" | sudo tee /tmp/le-challenge/txt' \
             --non-interactive \
