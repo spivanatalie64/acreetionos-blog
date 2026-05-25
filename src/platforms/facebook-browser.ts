@@ -127,7 +127,7 @@ export async function postToFacebookBrowser(
   }
 
   return {
-    platform: 'Facebook (Group)',
+    platform: `Facebook (${config.email})`,
     success,
     url,
     error,

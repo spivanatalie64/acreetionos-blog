@@ -26,6 +26,7 @@ export interface TwitterConfig {
 export interface Config {
   mastodon?: MastodonConfig
   facebook?: FacebookBrowserConfig
+  facebookDarren?: FacebookBrowserConfig
   threads?: ThreadsConfig
   twitter?: TwitterConfig
 }
@@ -45,6 +46,14 @@ export function loadConfig(): Config {
             email: process.env.FACEBOOK_EMAIL,
             password: process.env.FACEBOOK_PASSWORD,
             groupId: process.env.FACEBOOK_GROUP_ID,
+          }
+        : undefined,
+    facebookDarren:
+      process.env.FACEBOOK_DARREN_EMAIL && process.env.FACEBOOK_DARREN_PASSWORD
+        ? {
+            email: process.env.FACEBOOK_DARREN_EMAIL,
+            password: process.env.FACEBOOK_DARREN_PASSWORD,
+            groupId: process.env.FACEBOOK_GROUP_ID || '574717645277790',
           }
         : undefined,
     threads:

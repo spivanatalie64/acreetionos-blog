@@ -32,7 +32,8 @@ if (options.text && options.generate) {
 }
 
 async function main(): Promise<void> {
-  const text = options.text ?? (await generatePost(options.generate))
+  const raw = options.text ?? (await generatePost(options.generate))
+  const text = raw + '\n\n[Automated] Come hang out with us at discord.acreetionos.org'
 
   console.log(`\n  Post: "${text}"\n`)
 
@@ -40,9 +41,14 @@ async function main(): Promise<void> {
   const posts: Promise<PostResult>[] = []
 
   if (config.mastodon) posts.push(postToMastodon(config.mastodon, text, options.image))
-  if (config.facebook) posts.push(postToFacebookBrowser(config.facebook, text))
   if (config.threads) posts.push(postToThreads(config.threads, text))
   if (config.twitter) posts.push(postToTwitter(config.twitter, text, options.image))
+
+  const facebookUsers = [config.facebook, config.facebookDarren].filter(Boolean)
+  if (facebookUsers.length > 0) {
+    const idx = Math.floor(Math.random() * facebookUsers.length)
+    posts.push(postToFacebookBrowser(facebookUsers[idx]!, text))
+  }
 
   if (posts.length === 0) {
     console.error('No platforms configured.')
