@@ -31,41 +31,31 @@ export async function postToFacebookBrowser(
 
     const page = await context.newPage()
 
-    await page.goto(FACEBOOK_LOGIN, { waitUntil: 'networkidle' })
+    await page.goto(FACEBOOK_LOGIN, { waitUntil: 'domcontentloaded', timeout: 30000 })
     await delay(3000)
 
-    const emailSelectors = ['input[name="email"]', 'input[type="text"]', '#email']
-    for (const sel of emailSelectors) {
+    const dismissBtns = ['button:has-text("Allow")', 'button:has-text("Accept")', 'button:has-text("OK")', '[aria-label="Close"]']
+    for (const sel of dismissBtns) {
       const el = await page.$(sel)
-      if (el) { await el.fill(config.email); break }
+      if (el && (await el.isVisible())) { await el.click().catch(() => {}); await delay(1000) }
     }
 
-    const passSelectors = ['input[name="pass"]', 'input[type="password"]', '#pass']
-    for (const sel of passSelectors) {
-      const el = await page.$(sel)
-      if (el) { await el.fill(config.password); break }
-    }
+    const emailInput = await page.waitForSelector('input[name="email"], input[type="text"]', { timeout: 10000 }).catch(() => null)
+    if (emailInput) await emailInput.fill(config.email)
+    else throw new Error('Could not find email field')
+
+    const passInput = await page.waitForSelector('input[name="pass"], input[type="password"]', { timeout: 5000 }).catch(() => null)
+    if (passInput) await passInput.fill(config.password)
+    else throw new Error('Could not find password field')
 
     await delay(1000)
 
-    const loginBtnSelectors = [
-      'button[name="login"]',
-      'button[type="submit"]',
-      '#loginbutton',
-      'button:has-text("Log in")',
-      'button:has-text("Log In")',
-    ]
-
-    let loggedIn = false
-    for (const sel of loginBtnSelectors) {
-      const el = await page.$(sel)
-      if (el && (await el.isVisible())) {
-        await el.click()
-        loggedIn = true
-        break
-      }
+    const loginBtn = await page.$('button[name="login"], button[type="submit"], #loginbutton')
+    if (loginBtn && (await loginBtn.isVisible())) {
+      await loginBtn.click()
+    } else {
+      await page.keyboard.press('Enter')
     }
-    if (!loggedIn) throw new Error('Could not find login button')
 
     await page.waitForLoadState('networkidle')
     await delay(3000)
