@@ -5,9 +5,10 @@ export interface MastodonConfig {
   token: string
 }
 
-export interface FacebookConfig {
-  pageId: string
-  accessToken: string
+export interface FacebookBrowserConfig {
+  email: string
+  password: string
+  groupId: string
 }
 
 export interface ThreadsConfig {
@@ -24,7 +25,7 @@ export interface TwitterConfig {
 
 export interface Config {
   mastodon?: MastodonConfig
-  facebook?: FacebookConfig
+  facebook?: FacebookBrowserConfig
   threads?: ThreadsConfig
   twitter?: TwitterConfig
 }
@@ -39,10 +40,11 @@ export function loadConfig(): Config {
           }
         : undefined,
     facebook:
-      process.env.FACEBOOK_PAGE_ID && process.env.FACEBOOK_PAGE_ACCESS_TOKEN
+      process.env.FACEBOOK_EMAIL && process.env.FACEBOOK_PASSWORD && process.env.FACEBOOK_GROUP_ID
         ? {
-            pageId: process.env.FACEBOOK_PAGE_ID,
-            accessToken: process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
+            email: process.env.FACEBOOK_EMAIL,
+            password: process.env.FACEBOOK_PASSWORD,
+            groupId: process.env.FACEBOOK_GROUP_ID,
           }
         : undefined,
     threads:

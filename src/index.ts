@@ -4,7 +4,7 @@ import { Command } from 'commander'
 import { loadConfig } from './config.js'
 import { generatePost } from './generate.js'
 import { postToMastodon } from './platforms/mastodon.js'
-import { postToFacebook } from './platforms/facebook.js'
+import { postToFacebookBrowser } from './platforms/facebook-browser.js'
 import { postToThreads } from './platforms/threads.js'
 import { postToTwitter } from './platforms/twitter.js'
 import type { PostResult } from './types.js'
@@ -40,7 +40,7 @@ async function main(): Promise<void> {
   const posts: Promise<PostResult>[] = []
 
   if (config.mastodon) posts.push(postToMastodon(config.mastodon, text, options.image))
-  if (config.facebook) posts.push(postToFacebook(config.facebook, text, options.image))
+  if (config.facebook) posts.push(postToFacebookBrowser(config.facebook, text))
   if (config.threads) posts.push(postToThreads(config.threads, text))
   if (config.twitter) posts.push(postToTwitter(config.twitter, text, options.image))
 
