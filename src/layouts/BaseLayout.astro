@@ -21,7 +21,7 @@ const ogImage = image || '/og-default.png'
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
 
-    <title>{title} | acreetionos</title>
+    <title>{title} | AcreetionOS Blog</title>
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={url} />
@@ -36,6 +36,10 @@ const ogImage = image || '/og-default.png'
     {pubDate && <meta property="article:published_time" content={pubDate.toISOString()} />}
     {tags?.map(tag => <meta property="article:tag" content={tag} />)}
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
     <script type="application/ld+json set:html">
       {JSON.stringify(pubDate ? {
         "@context": "https://schema.org",
@@ -45,29 +49,33 @@ const ogImage = image || '/og-default.png'
         "image": new URL(ogImage, site).toString(),
         "url": url.toString(),
         "datePublished": pubDate.toISOString(),
+        "author": { "@type": "Person", "name": "Natalie" },
         "publisher": {
           "@type": "Organization",
-          "name": "acreetionos",
+          "name": "AcreetionOS",
           "url": site.toString(),
         },
       } : {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "acreetionos",
+        "name": "AcreetionOS",
         "url": site.toString(),
-        "description": "acreetionos - a cutting-edge operating system project.",
+        "description": "AcreetionOS - a cutting-edge operating system project.",
       })}
     </script>
 
     <style>
       :root {
-        --bg: #0d1117;
+        --bg: #0a0e14;
+        --bg2: #111820;
         --fg: #e6edf3;
         --accent: #58a6ff;
         --accent2: #3fb950;
-        --border: #30363d;
+        --accent3: #d2a8ff;
+        --border: #1e2a3a;
         --muted: #8b949e;
-        --max-w: 720px;
+        --glow: rgba(88, 166, 255, 0.15);
+        --max-w: 740px;
         --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
       }
@@ -78,72 +86,204 @@ const ogImage = image || '/og-default.png'
         color: var(--fg);
         line-height: 1.7;
         -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
-      a { color: var(--accent); text-decoration: none; }
-      a:hover { text-decoration: underline; }
+      a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+      a:hover { color: #79c0ff; text-decoration: none; }
+
       header {
+        background: linear-gradient(180deg, #0d1a2e 0%, var(--bg) 100%);
         border-bottom: 1px solid var(--border);
-        padding: 1.5rem 1rem;
+        padding: 0 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(12px);
       }
       nav {
         max-width: var(--max-w);
         margin: 0 auto;
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: 2rem;
+        height: 60px;
       }
-      nav a { color: var(--fg); font-weight: 600; font-size: 1.1rem; }
-      nav a:hover { color: var(--accent); text-decoration: none; }
+      .logo {
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: var(--fg) !important;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .logo-mark {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, var(--accent), var(--accent3));
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #fff;
+      }
+      .nav-links { display: flex; gap: 1.5rem; margin-left: auto; }
+      .nav-links a {
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+      }
+      .nav-links a:hover { color: var(--fg); }
+
       main {
         max-width: var(--max-w);
-        margin: 2rem auto;
+        margin: 3rem auto;
         padding: 0 1rem;
+        flex: 1;
+        width: 100%;
       }
-      h1 { font-size: 2rem; line-height: 1.3; margin-bottom: 0.5rem; }
-      h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 0.5rem; }
-      p { margin-bottom: 1rem; color: var(--muted); }
+
+      h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1.25;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.75rem;
+        background: linear-gradient(135deg, var(--fg), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 2.5rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+      }
+      h3 { font-size: 1.2rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+      p { margin-bottom: 1rem; color: var(--muted); line-height: 1.8; }
+      p strong { color: var(--fg); }
+      ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--muted); }
+      li { margin-bottom: 0.3rem; }
+      blockquote {
+        border-left: 3px solid var(--accent);
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        color: var(--muted);
+        font-style: italic;
+      }
       code {
         font-family: var(--font-mono);
-        background: #161b22;
+        background: var(--bg2);
         padding: 0.2em 0.4em;
         border-radius: 4px;
-        font-size: 0.9em;
+        font-size: 0.85em;
+        border: 1px solid var(--border);
       }
-      pre code { padding: 1rem; display: block; overflow-x: auto; }
-      .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+      pre {
+        margin: 1.5rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      pre code {
+        padding: 1rem;
+        display: block;
+        overflow-x: auto;
+        background: var(--bg2);
+        border: none;
+      }
+      img { max-width: 100%; border-radius: 8px; margin: 1.5rem 0; border: 1px solid var(--border); }
+      hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
       .tag {
         display: inline-block;
-        background: #1f2937;
+        background: rgba(88, 166, 255, 0.1);
         color: var(--accent);
-        padding: 0.2rem 0.6rem;
+        padding: 0.15rem 0.55rem;
         border-radius: 4px;
-        font-size: 0.8rem;
-        margin-right: 0.3rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1px solid rgba(88, 166, 255, 0.2);
       }
+
+      .card-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.5rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: var(--bg2);
+      }
+      .card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 0 30px var(--glow);
+      }
+      .card-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--fg) !important;
+        transition: color 0.2s;
+      }
+      .card:hover .card-title { color: var(--accent) !important; }
+
       footer {
         border-top: 1px solid var(--border);
         padding: 2rem 1rem;
         text-align: center;
         color: var(--muted);
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        background: var(--bg2);
+        margin-top: auto;
       }
       footer a { color: var(--muted); }
+      footer a:hover { color: var(--accent); }
+      .maintained {
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
     </style>
   </head>
   <body>
     <header>
       <nav>
-        <a href="/">acreetionos</a>
-        <a href="/">Blog</a>
-        <a href="https://acreetionos.org" target="_blank">Project</a>
-        <a href="https://discord.acreetionos.org" target="_blank">Discord</a>
+        <a href="/" class="logo">
+          <span class="logo-mark">A</span>
+          AcreetionOS
+        </a>
+        <div class="nav-links">
+          <a href="/">Blog</a>
+          <a href="https://acreetionos.org" target="_blank">Project</a>
+          <a href="https://discord.acreetionos.org" target="_blank">Discord</a>
+        </div>
       </nav>
     </header>
     <main>
       <slot />
     </main>
     <footer>
-      <p>acreetionos — <a href="https://acreetionos.org">acreetionos.org</a> &middot; <a href="https://discord.acreetionos.org">Discord</a> &middot; <a href="/rss.xml">RSS</a></p>
+      <p>
+        <a href="https://acreetionos.org">AcreetionOS</a>
+        &middot; <a href="https://discord.acreetionos.org">Discord</a>
+        &middot; <a href="/rss.xml">RSS</a>
+      </p>
+      <p class="maintained">Maintained by Natalie</p>
     </footer>
   </body>
 </html>

@@ -1,37 +1,43 @@
-# acreetionos Blog
+# AcreetionOS Blog
 
-SEO-optimized static blog for [acreetionos](https://acreetionos.org). Built with [Astro](https://astro.build).
+SEO-optimized static blog for [AcreetionOS](https://acreetionos.org) — a cutting-edge operating system project.
+
+Built with [Astro](https://astro.build). Maintained by Natalie.
 
 ## Features
 
-- Generated content + hand-written blog posts
-- AI-powered post generation via OpenRouter
+- AI-powered blog post generation via OpenRouter
 - RSS feed, sitemap, Schema.org structured data
-- Dark theme, responsive, zero JavaScript
-- Deploys to GitHub Pages
+- Dark theme with gradient accents, responsive, zero JavaScript
+- Auto-deploys to GitHub Pages on push
 
-## Quick start
+## Quick Start
 
 ```bash
 npm install
 npm run dev        # dev server at localhost:4321
 npm run build      # static build to dist/
-npm run generate-post  # AI generates a new post
 ```
 
-## AI post generation
+## AI Post Generation
 
-Set these GitHub secrets:
+Generate a new blog post:
 
-| Secret | Description |
-|---|---|
-| `OPENROUTER_API_KEY` | API key from [openrouter.ai](https://openrouter.ai) |
-| `CONTENT_PROMPT` | Topic/subject for the AI |
+```bash
+npm run generate-post
+```
 
-Run `npm run generate-post` to have the AI write a markdown post into `src/content/posts/`.
+Requires `OPENROUTER_API_KEY` and `CONTENT_PROMPT` set in `.env` or as GitHub secrets.
 
 ## Deployment
 
-Pushes to `main` automatically deploy to GitHub Pages via `.github/workflows/deploy.yml`.
+Pushes to `main` auto-deploy to GitHub Pages. Posts auto-generate Mon/Wed/Fri at noon UTC.
 
-Posts are auto-generated on a schedule via `.github/workflows/generate-post.yml`.
+## Stack
+
+| What | How |
+|---|---|
+| Framework | Astro |
+| AI | OpenRouter (free models) |
+| Hosting | GitHub Pages |
+| Fonts | Inter + JetBrains Mono |

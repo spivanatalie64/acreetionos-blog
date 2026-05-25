@@ -6,26 +6,32 @@ const posts = await getCollection('posts', ({ data }) => !data.draft)
 posts.sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
 ---
 
-<BaseLayout title="Blog" description="Latest news and updates from the acreetionos operating system project.">
-  <h1>acreetionos Blog</h1>
-  <p style="margin-bottom: 2rem;">
-    Updates, development progress, and community news from the acreetionos project.
-    <a href="/rss.xml">Subscribe via RSS</a>
+<BaseLayout title="Blog" description="Latest news and updates from the AcreetionOS operating system project. Maintained by Natalie.">
+  <h1>AcreetionOS Blog</h1>
+  <p style="margin-bottom: 2.5rem; font-size: 1.05rem;">
+    Updates, development progress, and community news from the AcreetionOS project.
+    <br/><a href="/rss.xml">Subscribe via RSS</a>
   </p>
 
-  {posts.length === 0 && <p>No posts yet. Coming soon.</p>}
+  {posts.length === 0 && (
+    <p style="text-align: center; padding: 3rem 0; color: var(--muted);">
+      No posts yet. Coming soon.
+    </p>
+  )}
 
-  <ul style="list-style: none; display: flex; flex-direction: column; gap: 1.5rem;">
+  <ul class="card-list">
     {posts.map((post) => (
-      <li style="border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
-        <a href={`/posts/${post.id}`} style="font-size: 1.2rem; font-weight: 600; color: var(--fg);">
+      <li class="card">
+        <a href={`/posts/${post.id}`} class="card-title">
           {post.data.title}
         </a>
-        <div class="meta" style="margin-top: 0.3rem;">
+        <div class="meta" style="margin-top: 0.4rem;">
           {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           {post.data.tags?.map(tag => <span class="tag">{tag}</span>)}
         </div>
-        <p style="margin: 0;">{post.data.description}</p>
+        <p style="margin: 0.3rem 0 0; font-size: 0.9rem;">
+          {post.data.description}
+        </p>
       </li>
     ))}
   </ul>
