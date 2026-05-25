@@ -8,7 +8,7 @@ export async function GET() {
   return rss({
     title: 'acreetionos Blog',
     description: 'Latest news and updates from the acreetionos operating system project.',
-    site: 'https://acreetionos.org',
+    site: 'https://natalie.acreetionos.org',
     items: posts.map((post) => ({
       title: post.data.title,
       pubDate: post.data.pubDate,
