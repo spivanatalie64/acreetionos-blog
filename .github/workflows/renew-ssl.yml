@@ -2,43 +2,55 @@ name: Renew SSL
 
 on:
   schedule:
-    - cron: '0 0 1 * *'   # 1st of every month
+    - cron: '0 0 */10 * *'   # every 10 days
   workflow_dispatch:
 
 jobs:
-  renew:
+  cert:
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Re-trigger certificate provisioning
+      - name: Install certbot with Cloudflare plugin
         run: |
-          gh api repos/spivanatalie64/acreetionos-blog/pages -X PUT \
-            -f cname='blog.natalie.acreetionos.org'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq certbot python3-certbot-dns-cloudflare
 
-      - name: Wait for HTTPS to be enforced
+      - name: Create Cloudflare credentials file
         run: |
-          for i in $(seq 1 30); do
-            status=$(gh api repos/spivanatalie64/acreetionos-blog/pages \
-              --jq '.https_certificate.state // "pending"')
-            echo "Attempt $i/30 — Certificate status: $status"
-            if [ "$status" = "approved" ]; then
-              echo "✓ SSL certificate issued"
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "✗ Certificate provisioning timed out"
-          exit 1
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          mkdir -p ~/.secrets
+          cat > ~/.secrets/cloudflare.ini <<EOF
+          dns_cloudflare_api_token = ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          EOF
+          chmod 600 ~/.secrets/cloudflare.ini
 
-      - name: Verify HTTPS
+      - name: Obtain or renew certificate
         run: |
-          curl -sI --max-time 10 "https://blog.natalie.acreetionos.org" | head -5
-          echo "✓ HTTPS is live"
+          sudo certbot certonly \
+            --dns-cloudflare \
+            --dns-cloudflare-credentials ~/.secrets/cloudflare.ini \
+            -d blog.natalie.acreetionos.org \
+            --email ACME_EMAIL \
+            --agree-tos \
+            --non-interactive \
+            --preferred-challenges dns \
+            --country US \
+            --state $STATE \
+            --city "$CITY" \
+            --org "$ORG" \
+            --keep-until-expiring
+
+      - name: Show certificate info
+        run: |
+          CERT_DIR="/etc/letsencrypt/live/blog.natalie.acreetionos.org"
+          if [ -d "$CERT_DIR" ]; then
+            sudo openssl x509 -in "$CERT_DIR/fullchain.pem" -noout -text | grep -E "Subject:|Not Before|Not After"
+            echo "✓ Certificate renewed"
+          else
+            echo "✗ Certificate directory not found"
+            exit 1
+          fi
+
+      - name: Upload certificate as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blog-natalie-acreetionos-cert
+          path: /etc/letsencrypt/live/blog.natalie.acreetionos.org/
