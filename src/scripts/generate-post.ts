@@ -54,7 +54,7 @@ function runOpencode(prompt: string): string {
       wroteAuth = true
     }
 
-    const result = execSync(`"${opencodeBin}" run ${JSON.stringify(prompt)}`, {
+    const result = execSync(`${opencodeBin} run ${JSON.stringify(prompt)}`, {
       encoding: 'utf-8',
       maxBuffer: 50 * 1024 * 1024,
       env: {
