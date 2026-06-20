@@ -30,25 +30,25 @@ function slugify(text: string): string {
 /**
  * Run opencode CLI with a prompt and return the output.
  * Reads OPENCODE_AUTH_JSON from env to set up credentials securely.
- * The auth file is written to a temp directory with restricted permissions
- * and cleaned up immediately after use.
+ *
+ * opencode looks for auth in $HOME/.local/share/opencode/auth.json by default.
+ * We write the file directly to that path with 0600 perms, then wipe it after.
  */
 function runOpencode(prompt: string): string {
   const opencodeBin = process.env.OPENCODE_BIN || 'opencode'
   const authJson = process.env.OPENCODE_AUTH_JSON
-  let authDir: string | null = null
+  const home = homedir()
+  const opencodeDataDir = join(home, '.local', 'share', 'opencode')
+  const authFile = join(opencodeDataDir, 'auth.json')
+  let wroteAuth = false
 
   try {
-    // Write auth.json with restricted 0600 permissions before running opencode
     if (authJson) {
-      const runnerTemp = process.env.RUNNER_TEMP
-      authDir = runnerTemp
-        ? join(runnerTemp, 'opencode-auth-' + Date.now())
-        : join(tmpdir(), 'opencode-auth-' + Date.now())
-      mkdirSync(authDir, { recursive: true, mode: 0o700 })
-      const authFile = join(authDir, 'auth.json')
-      writeFileSync(authFile, authJson, { mode: 0o600, encoding: 'utf-8' })
+      // Write auth.json to the exact path opencode expects
+      mkdirSync(opencodeDataDir, { recursive: true, mode: 0o700 })
+      writeFileSync(authFile, authJson, { encoding: 'utf-8' })
       chmodSync(authFile, 0o600)
+      wroteAuth = true
     }
 
     const result = execFileSync(opencodeBin, ['run', prompt], {
@@ -56,8 +56,7 @@ function runOpencode(prompt: string): string {
       maxBuffer: 50 * 1024 * 1024,
       env: {
         ...process.env,
-        HOME: homedir(),
-        XDG_CONFIG_HOME: process.env.XDG_CONFIG_HOME || join(homedir(), '.config'),
+        HOME: home,
         OPENCODE_NO_TELEMETRY: '1',
       },
       timeout: 120_000,
@@ -66,13 +65,10 @@ function runOpencode(prompt: string): string {
 
     return result.trim()
   } finally {
-    // Wipe credentials from disk immediately — never leave secrets lying around
-    if (authDir) {
-      try {
-        rmSync(authDir, { recursive: true, force: true })
-      } catch {
-        // best-effort cleanup, dir is temp anyway
-      }
+    // Wipe credentials from disk the moment we're done
+    // Only remove the auth file itself — never touch the rest of the dir
+    if (wroteAuth) {
+      try { rmSync(authFile, { force: true }) } catch { /* best-effort */ }
     }
   }
 }
@@ -84,29 +80,54 @@ async function main() {
   const now = new Date()
   const dateStr = now.toISOString().split('T')[0]
 
-  const prompt = `You are a technical writer for the AcreetionOS open-source operating system project (based on Arch Linux with Cinnamon desktop). Write an in-depth, informational blog post in markdown. Include a title, 3-5 substantive paragraphs, code snippets or terminal commands where relevant, and a short description line for SEO. Reference relevant upstream Arch Linux CVEs, mention upstream packages or kernel versions, and include practical security or performance advice. The post should be technically accurate, genuinely informative, and sound like it was written by a real person in the open-source community.
+  const prompt = `[SYSTEM]
+You are a markdown blog post generator for AcreetionOS. Your ENTIRE response must be ONLY the structured format below — no greetings, no explanations, no conversation, no backticks, no extra text whatsoever. Just the raw output.
 
-Write a blog post about ${subject}, focusing on ${angle}. Return it in this format:
-
+[FORMAT]
 TITLE: <the title>
 DESCRIPTION: <one-line SEO description>
 TAGS: <comma-separated tags>
 CONTENT:
-<markdown content>`
+<full markdown content starting with ## heading>
+
+[TOPIC]
+Write about ${subject}, focusing on ${angle}.
+
+Include: 3-5 substantive paragraphs, code snippets where relevant, reference to real CVEs. Technically accurate, informative, genuine open-source community voice.`
 
   console.log(`Generating post about "${subject}" (angle: ${angle})...`)
   const output = runOpencode(prompt)
   if (!output) throw new Error('opencode returned empty response')
 
-  const titleMatch = output.match(/TITLE:\s*(.+)/)
-  const descMatch = output.match(/DESCRIPTION:\s*(.+)/)
-  const tagsMatch = output.match(/TAGS:\s*(.+)/)
-  const contentMatch = output.split('CONTENT:\n')?.[1]
+  // Try structured format first
+  let title = 'Untitled Post'
+  let description = 'A post about acreetionos.'
+  let tags = ['update']
+  let markdown = output
 
-  const title = titleMatch?.[1]?.trim() || 'Untitled Post'
-  const description = descMatch?.[1]?.trim() || 'A post about acreetionos.'
-  const tags = tagsMatch?.[1]?.split(',').map((t) => t.trim()) || ['update']
-  const markdown = contentMatch?.trim() || output
+  const titleMatch = output.match(/^TITLE:\s*(.+)/im)
+  const descMatch = output.match(/^DESCRIPTION:\s*(.+)/im)
+  const tagsMatch = output.match(/^TAGS:\s*(.+)/im)
+
+  // Find CONTENT: and take everything after it
+  const contentSplit = output.split(/^CONTENT:\s*\n/im)
+  const hasContent = contentSplit.length > 1
+
+  if (titleMatch) title = titleMatch[1].trim()
+  if (descMatch) description = descMatch[1].trim()
+  if (tagsMatch) tags = tagsMatch[1].split(',').map((t) => t.trim())
+  if (hasContent) markdown = contentSplit[1].trim()
+
+  // Fallback: if no structured format was found, try to extract a title
+  // from the first # Heading or first line
+  if (!titleMatch && !hasContent) {
+    const headingMatch = output.match(/^#\s+(.+)/m)
+    if (headingMatch) title = headingMatch[1].trim()
+    // Remove any conversational intro before the first heading
+    const firstHeading = output.search(/^#/m)
+    if (firstHeading > 0) markdown = output.slice(firstHeading).trim()
+    else markdown = output
+  }
 
   const slug = slugify(title)
   const filename = `${dateStr}-${slug}.md`
