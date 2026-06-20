@@ -36,7 +36,7 @@ function slugify(text: string): string {
  */
 function runOpencode(prompt: string): string {
   // Allow explicit override, then try common npm global locations
-  // opencode is installed via npm -g and added to PATH by the workflow
+  // opencode is installed by the workflow and added to PATH
   const opencodeBin = process.env.OPENCODE_BIN || 'opencode'
   const authJson = process.env.OPENCODE_AUTH_JSON
   const home = homedir()
