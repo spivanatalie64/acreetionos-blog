@@ -15,12 +15,19 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx tsx src/scripts/generate-post.ts
+      - name: Install opencode CLI
+        run: |
+          # Install opencode via npm (lightweight, no sudo needed)
+          npm install -g @opencode-ai/cli
+          opencode --version
+      - name: Generate blog post
+        run: npx tsx src/scripts/generate-post.ts
         env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_MODEL: ${{ secrets.OPENROUTER_MODEL || '' }}
+          # Auth JSON for opencode-go provider — stored as a single encrypted secret
+          OPENCODE_AUTH_JSON: ${{ secrets.OPENCODE_AUTH_JSON }}
           CONTENT_PROMPT: ${{ secrets.CONTENT_PROMPT }}
-      - run: |
+      - name: Commit and push
+        run: |
           git config user.name "blog-bot"
           git config user.email "bot@acreetionos.org"
           git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/spivanatalie64/acreetionos-blog.git

@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.0",
-    "astro": "^5.0.0",
-    "openai": "^4.0.0"
+    "astro": "^5.0.0"
   },
   "devDependencies": {
     "tsx": "^4.0.0"
