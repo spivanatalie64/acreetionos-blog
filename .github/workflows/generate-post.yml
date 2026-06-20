@@ -18,8 +18,15 @@ jobs:
       - name: Install opencode CLI
         run: |
           npm install -g @opencode-ai/cli
-          # Add npm exec bin dir to PATH for subsequent steps
-          echo "$(npm config get prefix)/bin" >> "$GITHUB_PATH"
+          # Debug: find where opencode was installed
+          which opencode || find /opt/hostedtoolcache -name "opencode" -type f 2>/dev/null || find /usr -name "opencode" -type f 2>/dev/null || true
+          echo "---"
+          npm config get prefix
+          echo "---"
+          ls "$(npm config get prefix)/bin/" 2>/dev/null || echo "no bin dir at prefix/bin"
+          echo "---"
+          # Find any opencode-related files
+          find / -name "opencode" -type f 2>/dev/null | head -5 || true
 
       - name: Generate blog post
         run: npx tsx src/scripts/generate-post.ts
