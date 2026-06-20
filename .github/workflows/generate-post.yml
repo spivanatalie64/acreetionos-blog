@@ -18,9 +18,10 @@ jobs:
       - name: Install opencode CLI
         run: |
           npm install -g @opencode-ai/cli
-          # Add npm global bin to PATH so opencode is found
-          echo "$(npm root -g)/../bin" >> "$GITHUB_PATH"
-          opencode --version
+          OPENCODE_PATH="$(npm root -g)/../bin"
+          echo "Adding $OPENCODE_PATH to PATH"
+          echo "$OPENCODE_PATH" >> "$GITHUB_PATH"
+          "$OPENCODE_PATH/opencode" --version
       - name: Generate blog post
         run: npx tsx src/scripts/generate-post.ts
         env:

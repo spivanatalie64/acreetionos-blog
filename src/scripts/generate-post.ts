@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { writeFile, mkdir } from 'node:fs/promises'
-import { mkdirSync, writeFileSync, chmodSync, rmSync } from 'node:fs'
+import { mkdirSync, writeFileSync, chmodSync, rmSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { tmpdir, homedir } from 'node:os'
@@ -35,7 +35,21 @@ function slugify(text: string): string {
  * We write the file directly to that path with 0600 perms, then wipe it after.
  */
 function runOpencode(prompt: string): string {
-  const opencodeBin = process.env.OPENCODE_BIN || 'opencode'
+  // Allow explicit override, then try common npm global locations
+  const opencodeBin =
+    process.env.OPENCODE_BIN ||
+    (() => {
+      // In CI, npm global bin may be in PATH from GITHUB_PATH,
+      // but fall back to common locations just in case
+      const candidates = [
+        'opencode',
+        '/usr/local/bin/opencode',
+        '/usr/lib/node_modules/@opencode-ai/cli/bin/opencode',
+      ]
+      const npmRoot = process.env.npm_config_prefix
+      if (npmRoot) candidates.unshift(join(npmRoot, 'bin', 'opencode'))
+      return candidates.find((c) => { try { return existsSync(c) } catch { return false } }) || 'opencode'
+    })()
   const authJson = process.env.OPENCODE_AUTH_JSON
   const home = homedir()
   const opencodeDataDir = join(home, '.local', 'share', 'opencode')
