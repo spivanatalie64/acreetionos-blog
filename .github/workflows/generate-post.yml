@@ -18,7 +18,7 @@ jobs:
       - run: npx tsx src/scripts/generate-post.ts
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_MODEL: ${{ secrets.OPENROUTER_MODEL }}
+          OPENROUTER_MODEL: ${{ secrets.OPENROUTER_MODEL || '' }}
           CONTENT_PROMPT: ${{ secrets.CONTENT_PROMPT }}
       - run: |
           git config user.name "blog-bot"

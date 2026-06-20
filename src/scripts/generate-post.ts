@@ -8,12 +8,12 @@ const POSTS_DIR = join(__dirname, '..', 'content', 'posts')
 
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1'
 
-const FREE_MODELS = [
+const FALLBACK_MODELS = [
+  'openai/gpt-4o-mini',
   'meta-llama/llama-3.2-3b-instruct:free',
-  'google/gemma-4-26b-a4b-it:free',
   'deepseek/deepseek-v4-flash:free',
   'qwen/qwen3-coder:free',
-  'nousresearch/hermes-3-llama-3.1-405b:free',
+  'google/gemma-4-26b-a4b-it:free',
 ]
 
 const ANGLES = [
@@ -39,10 +39,17 @@ async function main() {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set')
 
-  const openai = new OpenAI({ baseURL: OPENROUTER_BASE, apiKey })
+  const openai = new OpenAI({
+    baseURL: OPENROUTER_BASE,
+    apiKey,
+    defaultHeaders: {
+      'HTTP-Referer': 'https://acreetionos.org',
+      'X-Title': 'AcreetionOS Blog',
+    },
+  })
   const model = process.env.OPENROUTER_MODEL
     ? process.env.OPENROUTER_MODEL
-    : FREE_MODELS[Math.floor(Math.random() * FREE_MODELS.length)]
+    : FALLBACK_MODELS[Math.floor(Math.random() * FALLBACK_MODELS.length)]
   const angle = ANGLES[Math.floor(Math.random() * ANGLES.length)]
 
   const subject = process.env.CONTENT_PROMPT || 'acreetionos (acreetionos.org)'
@@ -110,6 +117,12 @@ ${markdown}
 }
 
 main().catch((err) => {
-  console.error('Fatal:', err.message)
+  const status = err.status ? ` (HTTP ${err.status})` : ''
+  console.error(`Fatal: ${err.message}${status}`)
+  if (err.status === 401) {
+    console.error('Hint: Your OpenRouter API key may be invalid or expired.')
+    console.error('      Generate a new key at https://openrouter.ai/keys')
+    console.error('      Also ensure OPENROUTER_MODEL secret is set in repo settings.')
+  }
   process.exit(1)
 })
