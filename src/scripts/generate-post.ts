@@ -36,9 +36,8 @@ function slugify(text: string): string {
  */
 function runOpencode(prompt: string): string {
   // Allow explicit override, then try common npm global locations
-  // Use npx --package to resolve the correct binary from @opencode-ai/cli
-  // On GitHub Actions, npm global bins aren't on PATH so npx bridges the gap
-  const opencodeBin = process.env.OPENCODE_BIN || 'npx --yes --package @opencode-ai/cli opencode'
+  // opencode is installed via npm -g and added to PATH by the workflow
+  const opencodeBin = process.env.OPENCODE_BIN || 'opencode'
   const authJson = process.env.OPENCODE_AUTH_JSON
   const home = homedir()
   const opencodeDataDir = join(home, '.local', 'share', 'opencode')

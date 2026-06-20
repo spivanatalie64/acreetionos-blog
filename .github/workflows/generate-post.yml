@@ -15,6 +15,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Install opencode CLI
+        run: |
+          npm install -g @opencode-ai/cli
+          # Add npm exec bin dir to PATH for subsequent steps
+          echo "$(npm config get prefix)/bin" >> "$GITHUB_PATH"
 
       - name: Generate blog post
         run: npx tsx src/scripts/generate-post.ts
